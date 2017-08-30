@@ -31,6 +31,13 @@
   // };
   // firebase.initializeApp(config);
 // </script>
+    function Train(trainName, destination, startTime, frequency, dateAdded) {
+      this.trainName = trainName;
+      this.destination = destination;
+      this.startTime = startTime;
+      this.frequency = frequency;
+      this.dateAdded = dateAdded;
+    };
 
     
     // Create a variable to reference the database.
@@ -41,6 +48,26 @@
     var startTime = "";
     var frequency = "";
     var tableBody = $("#data-info");
+    // var trains    = new Array();
+    // trains.push(new Object());
+    var train1 = {
+        trainName: "Trenton Express",
+        destination: "Trenton",
+        startTime: "05:35 PM",
+        frequency: 25,
+        dateAdded: firebase.database.ServerValue.TIMESTAMP
+      };
+    var train2 = {
+        trainName: "Oregon Trail",
+        destination: "Salem, Oregon",
+        startTime: "01:39 PM",
+        frequency: 3600,
+        dateAdded: firebase.database.ServerValue.TIMESTAMP
+      };
+      var trains = [train1, train2];
+      console.log(train1);
+      console.log(train2);
+      console.log(trains);
     
     // Capture Button Click
     $("#add-user").on("click", function(event) {
@@ -51,15 +78,21 @@
       frequency   = $("#frequency").val().trim();
       startTime   = $("#start-time").val().trim();
 
-      console.log("I got " + trainName + ", " + destination + ", " + frequency + ", " + startTime);
+      // console.log("I got " + trainName + ", " + destination + ", " + frequency + ", " + startTime);
       // Code for handling the push
-      database.ref().push({
-        trainName:   trainName,
+      var train = {
+        trainName: trainName,
         destination: destination,
-        frequency:   frequency,
-        startTime:   startTime,
-        dateAdded:   firebase.database.ServerValue.TIMESTAMP
-      });
+        startTime: startTime,
+        frequency: frequency,
+        dateAdded: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      console.log(train);
+      console.log(trains);
+
+      trains.push(train);
+      database.ref().set(trains);
     });
     // Firebase watcher + initial loader + order/limit HINT: .on("child_added"
     database.ref().orderByChild("dateAdded").limitToLast(1).on("child_added", function(snapshot) {
@@ -98,23 +131,40 @@
       console.log("Errors handled: " + errorObject.code);
     });
 
-    var myTrains = [];
+
 
     $(document).ready(function(snapshot){
-      console.log("I dont know what to do.");
 
         database.ref().on("value", function(snapshot){
-          console.log("This is what I got.");
-          console.log(snapshot.numChildren());
-          console.log(snapshot);
-          console.log(snapshot.val());
-          myTrains = snapshot.toJSON();
-          console.log(myTrains);
-          console.log(snapshot.numChildren());
-          console.log(snapshot[0]);
-          console.log(snapshot[1]);
-          console.log("Thats all there is.  There aint no more."); 
+          trains = snapshot.val();
+
         });
-
-
     });
+
+    function displayTrains() {
+      $("#data-info").empty();
+
+      for(var i = 0; i < trains.length; i++) {
+        var tableRow = $("<tr>");
+
+        var trainNameTD = $("<td>");
+        trainNameTD.text(trains[i].trainName);
+
+        var destinationTD = $("<td>");
+        destinationTD.text(trains[i].destination);
+
+        var frequencyTD = $("<td>");
+        frequencyTD.text(trains[i].frequency);
+
+        var startTimeTD = $("<td>");
+        startTimeTD.text(trains[i].startTime);
+
+        tableRow.append(trainNameTD);
+        tableRow.append(destinationTD);
+        tableRow.append(frequencyTD);
+        tableRow.append(startTimeTD);
+
+        $("#data-info").append(tableRow);
+      }
+
+    };
