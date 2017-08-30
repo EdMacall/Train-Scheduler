@@ -5,7 +5,7 @@
     authDomain: "trainscheduler-426f5.firebaseapp.com",
     databaseURL: "https://trainscheduler-426f5.firebaseio.com",
     projectId: "trainscheduler-426f5",
-    storageBucket: "",
+    storageBucket: "trainscheduler-426f5.appspot.com",
     messagingSenderId: "864589888392"
   };
   firebase.initializeApp(config);
@@ -53,18 +53,18 @@
     var train1 = {
         trainName: "Trenton Express",
         destination: "Trenton",
-        startTime: "05:35 PM",
+        startTime: "17:35",
         frequency: 25,
         dateAdded: firebase.database.ServerValue.TIMESTAMP
       };
     var train2 = {
         trainName: "Oregon Trail",
         destination: "Salem, Oregon",
-        startTime: "01:39 PM",
+        startTime: "13:39",
         frequency: 3600,
         dateAdded: firebase.database.ServerValue.TIMESTAMP
       };
-      var trains = [train1, train2];
+      var trains = [];
       console.log(train1);
       console.log(train2);
       console.log(trains);
@@ -96,35 +96,7 @@
     });
     // Firebase watcher + initial loader + order/limit HINT: .on("child_added"
     database.ref().orderByChild("dateAdded").limitToLast(1).on("child_added", function(snapshot) {
-      // storing the snapshot.val() in a variable for convenience
-      var sv = snapshot.val();
-      // Console.loging the last user's data
-      console.log(sv.trainName);
-      console.log(sv.destination);
-      console.log(sv.frequency);
-      console.log(sv.startTime);
-
-
-      var tableRow = $("<tr>");
-
-      var trainNameTD = $("<td>");
-      trainNameTD.text(sv.trainName);
-
-      var destinationTD = $("<td>");
-      destinationTD.text(sv.destination);
-
-      var frequencyTD = $("<td>");
-      frequencyTD.text(sv.frequency);
-
-      var startTimeTD = $("<td>");
-      startTimeTD.text(sv.startTime);
-
-      tableRow.append(trainNameTD);
-      tableRow.append(destinationTD);
-      tableRow.append(frequencyTD);
-      tableRow.append(startTimeTD);
-
-      $("#data-info").append(tableRow);
+      displayTrains();
 
       // Handle the errors
     }, function(errorObject) {
@@ -137,7 +109,7 @@
 
         database.ref().on("value", function(snapshot){
           trains = snapshot.val();
-
+          displayTrains();
         });
     });
 
@@ -157,12 +129,32 @@
         frequencyTD.text(trains[i].frequency);
 
         var startTimeTD = $("<td>");
-        startTimeTD.text(trains[i].startTime);
+        var randomFormat = "hh:mm";
+        var convertedDate = moment(trains[i].startTime, randomFormat);
+        // convertedDate.format("LT");
+        console.log("I got " + convertedDate);
+        
+        console.log("This is what I got " + moment(convertedDate).diff(moment(), "minutes"));
+
+        while(true) {
+          if(moment(convertedDate).diff(moment(), "minutes") >= 0) {
+            break;
+          }
+
+          convertedDate.add(trains[i].frequency, "minutes");
+          console.log("This is how I fixed it " + moment(convertedDate).diff(moment(), "minutes"));
+        }
+
+        startTimeTD.text(convertedDate.format("LT"));
+
+        var minutesAwayTD = $("<td>");
+        minutesAwayTD.text(moment(convertedDate).diff(moment(), "minutes"));
 
         tableRow.append(trainNameTD);
         tableRow.append(destinationTD);
         tableRow.append(frequencyTD);
         tableRow.append(startTimeTD);
+        tableRow.append(minutesAwayTD);
 
         $("#data-info").append(tableRow);
       }
