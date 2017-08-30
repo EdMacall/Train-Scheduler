@@ -78,6 +78,7 @@
       frequency   = $("#frequency").val().trim();
       startTime   = $("#start-time").val().trim();
 
+
       // console.log("I got " + trainName + ", " + destination + ", " + frequency + ", " + startTime);
       // Code for handling the push
       var train = {
@@ -88,11 +89,16 @@
         dateAdded: firebase.database.ServerValue.TIMESTAMP
       };
 
-      console.log(train);
-      console.log(trains);
+      // console.log(train);
+      // console.log(trains);
 
       trains.push(train);
       database.ref().set(trains);
+
+      $("#train-name").val("");
+      $("#destination").val("");
+      $("#frequency").val("");
+      $("#start-time").val("");
     });
     // Firebase watcher + initial loader + order/limit HINT: .on("child_added"
     database.ref().orderByChild("dateAdded").limitToLast(1).on("child_added", function(snapshot) {
